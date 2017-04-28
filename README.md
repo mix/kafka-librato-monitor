@@ -1,5 +1,5 @@
 # kafka-librato-monitor
-Plugin to [KafkaOffsetMonitor](https://github.com/quantifind/KafkaOffsetMonitor) tool reporting offset data to [Librato](https://www.librato.com/) via [dropwizard metrics](https://github.com/dropwizard/metrics) Librato [reporter](https://github.com/librato/dropwizard-librato) 
+Plugin to [KafkaOffsetMonitor](https://github.com/quantifind/KafkaOffsetMonitor) tool reporting offset data to [Librato](https://www.librato.com/) via [dropwizard metrics](https://github.com/dropwizard/metrics) Librato [reporter](https://github.com/librato/metrics-librato) 
 
 ## Getting Started
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
@@ -48,7 +48,7 @@ The pluginArgs used by kafka-librato-monitor are:
 
 * [KafkaOffsetMonitor](https://github.com/quantifind/KafkaOffsetMonitor)
 * [Dropwizard Metrics](http://metrics.dropwizard.io/) - Toolkit of ways to measure the behavior of an application
-* [dropwizard-librato](https://github.com/librato/dropwizard-librato) - Librato reporter for Dropwizard Metrics
+* [metrics-librato](https://github.com/librato/metrics-librato) - Librato reporter for Dropwizard Metrics
 
 ## Contributing
 
