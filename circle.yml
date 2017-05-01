@@ -1,0 +1,25 @@
+machine:
+  java:
+    version: oraclejdk8
+  environment:
+    SBT_VERSION: 0.13.12
+    SBT_OPTS: "-Xms512M -Xmx1536M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxMetaspaceSize=256M"
+    SBT_CREDENTIALS: "$HOME/.sbt/.credentials"
+dependencies:
+  cache_directories:
+    - "~/.ivy2"
+    - "~/.sbt"
+  pre:
+    - wget --output-document=$HOME/bin/sbt-launch.jar https://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/"$SBT_VERSION"/sbt-launch.jar && echo "java $SBT_OPTS -jar \`dirname \$0\`/sbt-launch.jar \"\$@\"" > $HOME/bin/sbt && chmod u+x $HOME/bin/sbt
+    - "echo -e \"[repositories] \n mix-ivy-releases: https://mix.artifactoryonline.com/mix/ivy-releases/, [organization]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[type]s/[artifact](-[classifier]).[ext] \n mix-maven-releases: https://mix.artifactoryonline.com/mix/mvn-releases/\" > ~/.sbt/repositories"
+    - echo -e "realm=Artifactory Realm\nhost=mix.artifactoryonline.com\nuser=${ARTIFACTORY_DEPLOY_USER}\npassword=${ARTIFACTORY_DEPLOY_PWD}" > ~/.sbt/.credentials && mkdir -p ~/.sbt/0.13/plugins/ && echo "credentials += Credentials(Path.userHome / \".sbt\" / \".credentials\")" > ~/.sbt/0.13/plugins/credentials.sbt
+test:
+  override:
+    - sbt test
+deployment:
+  release:
+    branch: master
+    commands:
+      - sbt assembly
+      - "cp target/scala-2.11/kafka-librato-monitor-assembly-*.jar $CIRCLE_ARTIFACTS/"
+

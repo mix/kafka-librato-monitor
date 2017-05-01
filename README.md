@@ -8,7 +8,7 @@ These instructions will get you a copy of the project up and running on your loc
 Install sbt, scala if not already installed
 
 ### Installing
-Currently KafkaOffsetMonitor is not available via public artifact repository, so before we build the plugin we need to build KafkaOffsetMonitor and publish it to maven local repo:
+Currently KafkaOffsetMonitor is not available via public artifact repository, so before we build the plugin we need to build KafkaOffsetMonitor and publish it to maven local repo (for external only; for mix we have published the artifact in Mix Internal Repo):
 
 ```
 sbt publishM2
