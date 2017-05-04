@@ -14,9 +14,9 @@ class OffsetReporter(metrics: MetricRegistry,
 
   reporter.start(reportingInterval.getSeconds, TimeUnit.SECONDS)
 
-  def report(info: IndexedSeq[OffsetGetter.OffsetInfo]): Unit = {
-    val cacheEntries = info map { i =>
-      getMetricName(i) -> Lag(i.lag)
+  def report(offsets: IndexedSeq[OffsetGetter.OffsetInfo]): Unit = {
+    val cacheEntries = offsets map { offset =>
+      getMetricName(offset) -> Lag(offset.lag)
     } toMap
 
     import scala.collection.JavaConverters._

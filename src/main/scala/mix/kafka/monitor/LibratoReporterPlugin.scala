@@ -24,5 +24,5 @@ class LibratoReporterPlugin(pluginArgs: String) extends OffsetInfoReporter {
   private lazy val offsetReporter = new OffsetReporter(metrics, libratoReporter,
     libratoConfig.reportingInterval, libratoConfig.metricsCacheExpiration)
 
-  override def report(info: IndexedSeq[OffsetGetter.OffsetInfo]): Unit = offsetReporter.report(info)
+  override def report(offsets: IndexedSeq[OffsetGetter.OffsetInfo]): Unit = offsetReporter.report(offsets)
 }
