@@ -12,6 +12,11 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 )
 
+// To remove multiple exclusions
+excludeDependencies ++= Seq(
+  SbtExclusionRule("com.google.code.findbugs", "annotations")
+)
+
 // javac & scalac options
 javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint")
 
