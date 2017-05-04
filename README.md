@@ -32,14 +32,14 @@ java -cp "KafkaOffsetMonitor-assembly-0.3.0-SNAPSHOT.jar:kafka-librato-monitor-a
      --port 8080 \
      --refresh 10.seconds \
      --retain 2.days \
-     --pluginsArgs libratoEmail=user@company.com,libratoToken=123456789ABCDEFGHIJKL,libratoPrefix=kafka-lag
+     --pluginsArgs libratoEmail=user@company.com,libratoToken=123456789ABCDEFGHIJKL,libratoPrefix=kafka-monitor
 ```
 
 The pluginArgs used by kafka-librato-monitor are:
 
 - **libratoEmail** Librato Email (required)
 - **libratoToken** Librato API Token (required)
-- **libratoPrefix** Metrics prefix (default kafka-lag)
+- **libratoPrefix** Metrics prefix (default kafka-monitor)
 - **libratoSource** Source Identifier (default hostname - if runs in docker it is usually container's id in bridge mode)
 - **libratoReportingInterval** Reporting interval in ISO-8601 format (default PT30S)
 - **metricsCacheExpiration** Metrics cache TTL in ISO-8601 format (default PT10M). Offset metrics are stored in expiring cache and reported to Librato periodically. If metrics are not updated they will be removed.

@@ -19,7 +19,7 @@ object LibratoConfigConstants {
   val reportingIntervalParam = "libratoReportingInterval"
   val metricsCacheExpirationParam = "metricsCacheExpiration"
 
-  val defaultPrefix = "kafka-lag"
+  val defaultPrefix = "kafka-monitor"
 }
 
 object LibratoConfig {
