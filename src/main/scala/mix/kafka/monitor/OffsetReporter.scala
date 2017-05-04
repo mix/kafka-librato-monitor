@@ -38,7 +38,7 @@ class OffsetReporter(metrics: MetricRegistry,
       "lag"
     )
 
-    nameComponents.map(_.replaceAll(".", "_")).mkString(".")
+    nameComponents.map(_.replaceAll(".", "-")).mkString(".")
   }
 
   import com.github.benmanes.caffeine.cache._
