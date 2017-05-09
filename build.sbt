@@ -17,6 +17,12 @@ excludeDependencies ++= Seq(
   SbtExclusionRule("com.google.code.findbugs", "annotations")
 )
 
+// use mix log4j.properties
+assemblyMergeStrategy in assembly := {
+  case "log4j.properties" => MergeStrategy.first
+  case x => MergeStrategy.defaultMergeStrategy.apply(x)
+}
+
 // javac & scalac options
 javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint")
 
