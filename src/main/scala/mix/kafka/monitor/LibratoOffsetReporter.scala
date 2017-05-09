@@ -6,11 +6,14 @@ import java.util.concurrent.TimeUnit
 import com.codahale.metrics.{Gauge, MetricRegistry, ScheduledReporter}
 import com.quantifind.kafka.OffsetGetter
 import com.quantifind.kafka.OffsetGetter.OffsetInfo
+import kafka.utils.Logging
 
-class OffsetReporter(metrics: MetricRegistry,
-                     reporter: ScheduledReporter,
-                     reportingInterval: Duration,
-                     metricsCacheExpiration: Duration) {
+class LibratoOffsetReporter(metrics: MetricRegistry,
+                            reporter: ScheduledReporter,
+                            reportingInterval: Duration,
+                            metricsCacheExpiration: Duration) extends Logging {
+
+  logger.info(s"starting LibratoOffsetReporter with interval = $reportingInterval, cacheTTL = $metricsCacheExpiration")
 
   reporter.start(reportingInterval.getSeconds, TimeUnit.SECONDS)
 
@@ -51,7 +54,9 @@ class OffsetReporter(metrics: MetricRegistry,
 
   private lazy val removalListener = new RemovalListener[String, Lag] {
     override def onRemoval(notification: RemovalNotification[String, Lag]): Unit = {
-      metrics.remove(notification.getKey)
+      val metricName = notification.getKey
+      logger.info(s"removing $metricName from registry")
+      metrics.remove(metricName)
     }
   }
 
@@ -62,6 +67,7 @@ class OffsetReporter(metrics: MetricRegistry,
         override def getValue: Long = default.value
       }
 
+      logger.info(s"adding $key to registry")
       metrics.register(key, lag)
       default
     }

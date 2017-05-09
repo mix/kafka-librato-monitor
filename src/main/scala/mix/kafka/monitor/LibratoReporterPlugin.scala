@@ -6,12 +6,15 @@ import com.codahale.metrics.MetricRegistry
 import com.librato.metrics.reporter.LibratoReporter
 import com.quantifind.kafka.OffsetGetter
 import com.quantifind.kafka.offsetapp.OffsetInfoReporter
+import kafka.utils.Logging
 
-class LibratoReporterPlugin(pluginArgs: String) extends OffsetInfoReporter {
+class LibratoReporterPlugin(pluginArgs: String) extends OffsetInfoReporter with Logging {
 
   private lazy val metrics = new MetricRegistry
 
   private lazy val libratoConfig = LibratoConfig.parseArguments(pluginArgs)
+
+  logger.info(s"starting LibratoReporterPlugin with prefix = ${libratoConfig.prefix}, source = ${libratoConfig.source}")
 
   private lazy val libratoReporter = LibratoReporter
     .builder(metrics, libratoConfig.email, libratoConfig.token)
@@ -21,7 +24,7 @@ class LibratoReporterPlugin(pluginArgs: String) extends OffsetInfoReporter {
     .setDurationUnit(TimeUnit.MILLISECONDS)
     .build()
 
-  private lazy val offsetReporter = new OffsetReporter(metrics, libratoReporter,
+  private lazy val offsetReporter = new LibratoOffsetReporter(metrics, libratoReporter,
     libratoConfig.reportingInterval, libratoConfig.metricsCacheExpiration)
 
   override def report(offsets: IndexedSeq[OffsetGetter.OffsetInfo]): Unit = offsetReporter.report(offsets)
