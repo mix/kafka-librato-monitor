@@ -13,7 +13,10 @@ class LibratoOffsetReporter(metrics: MetricRegistry,
                             reportingInterval: Duration,
                             metricsCacheExpiration: Duration) extends Logging {
 
-  logger.info(s"starting LibratoOffsetReporter with interval = $reportingInterval, cacheTTL = $metricsCacheExpiration")
+  import LibratoOffsetReporter._
+
+  logger.info(s"starting LibratoOffsetReporter with interval = ${reportingInterval.getSeconds} secs, " +
+    s"cacheTTL = ${metricsCacheExpiration.getSeconds} secs")
 
   reporter.start(reportingInterval.getSeconds, TimeUnit.SECONDS)
 
@@ -31,17 +34,6 @@ class LibratoOffsetReporter(metrics: MetricRegistry,
      */
     cache.getAll(cacheEntries.keys.asJava)
     cache.putAll(cacheEntries.asJava)
-  }
-
-  private def getMetricName(offsetInfo: OffsetInfo): String = {
-    val nameComponents = Seq (
-      offsetInfo.group,
-      offsetInfo.topic,
-      offsetInfo.partition.toString,
-      "lag"
-    )
-
-    nameComponents.map(_.replaceAll(".", "-")).mkString(".")
   }
 
   import com.github.benmanes.caffeine.cache._
@@ -71,5 +63,18 @@ class LibratoOffsetReporter(metrics: MetricRegistry,
       metrics.register(key, lag)
       default
     }
+  }
+}
+
+object LibratoOffsetReporter {
+  def getMetricName(offsetInfo: OffsetInfo): String = {
+    val nameComponents = Seq (
+      offsetInfo.group,
+      offsetInfo.topic,
+      offsetInfo.partition.toString,
+      "lag"
+    )
+
+    nameComponents.map(_.replaceAll("\\.", "-")).map(_.toLowerCase).mkString(".")
   }
 }
