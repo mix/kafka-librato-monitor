@@ -30,4 +30,16 @@ class LibratoOffsetReporterSpec extends FlatSpec with Matchers {
     LibratoOffsetReporter.getMetricName(offsetInfo) shouldBe expectedMetricName
   }
 
+  it should "convert words to lowercase metric name" in {
+    val group = "DUMMY-group"
+    val topic = "dummy-TOPIC"
+    val resolvedGroup = "dummy-group"
+    val resolvedTopic = "dummy-topic"
+    val partition = 1
+    val offsetInfo = OffsetInfo(group, topic, partition, 0L, 0L, None, Time.epoch, Time.epoch)
+
+    val expectedMetricName = s"$resolvedGroup.$resolvedTopic.$partition.lag"
+    LibratoOffsetReporter.getMetricName(offsetInfo) shouldBe expectedMetricName
+  }
+
 }

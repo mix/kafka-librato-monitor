@@ -75,6 +75,6 @@ object LibratoOffsetReporter {
       "lag"
     )
 
-    nameComponents.map(_.replaceAll("\\.", "-")).mkString(".")
+    nameComponents.map(_.replaceAll("\\.", "-")).map(_.toLowerCase).mkString(".")
   }
 }
