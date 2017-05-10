@@ -15,8 +15,7 @@ class LibratoOffsetReporter(metrics: MetricRegistry,
 
   import LibratoOffsetReporter._
 
-  logger.info(s"starting LibratoOffsetReporter with interval = ${reportingInterval.getSeconds} secs, " +
-    s"cacheTTL = ${metricsCacheExpiration.getSeconds} secs")
+  logger.info(s"starting LibratoOffsetReporter with interval = $reportingInterval, cacheTTL = $metricsCacheExpiration")
 
   reporter.start(reportingInterval.getSeconds, TimeUnit.SECONDS)
 
