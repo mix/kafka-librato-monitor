@@ -47,7 +47,7 @@ class LibratoOffsetReporter(metrics: MetricRegistry,
   private lazy val removalListener = new RemovalListener[String, Lag] {
     override def onRemoval(notification: RemovalNotification[String, Lag]): Unit = {
       val metricName = notification.getKey
-      logger.info(s"removing $metricName from registry")
+      logger.info(s"removing $metricName with ${notification.getValue} from registry, cause: ${notification.getCause}")
       metrics.remove(metricName)
     }
   }
