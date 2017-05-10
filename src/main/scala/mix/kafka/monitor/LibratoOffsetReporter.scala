@@ -46,9 +46,16 @@ class LibratoOffsetReporter(metrics: MetricRegistry,
 
   private lazy val removalListener = new RemovalListener[String, Lag] {
     override def onRemoval(notification: RemovalNotification[String, Lag]): Unit = {
-      val metricName = notification.getKey
-      logger.info(s"removing $metricName with ${notification.getValue} from registry, cause: ${notification.getCause}")
-      metrics.remove(metricName)
+      notification.getCause match {
+        case RemovalCause.REPLACED =>
+          logger.debug(s"updating value for ${notification.getKey}")
+        case RemovalCause.EXPIRED =>
+          val metricName = notification.getKey
+          logger.info(s"removing $metricName from registry after expiration")
+          metrics.remove(metricName)
+        case _ =>
+          throw new IllegalStateException(s"unsupported ${notification.getCause} for metrics cache")
+      }
     }
   }
 
@@ -68,7 +75,7 @@ class LibratoOffsetReporter(metrics: MetricRegistry,
 
 object LibratoOffsetReporter {
   def getMetricName(offsetInfo: OffsetInfo): String = {
-    val nameComponents = Seq (
+    val nameComponents = Seq(
       offsetInfo.group,
       offsetInfo.topic,
       offsetInfo.partition.toString,
