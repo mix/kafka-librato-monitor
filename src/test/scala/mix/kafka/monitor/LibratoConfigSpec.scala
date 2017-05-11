@@ -35,6 +35,19 @@ class LibratoConfigSpec extends FlatSpec with Matchers {
     LibratoConfig.parseArguments(args) shouldBe expectedConfig
   }
 
+  it should "build instance of config with defaults for empty params" in {
+    val email = "mail@example.com"
+    val token = "12345678ABC"
+
+    val args = s"$emailParam=$email,$tokenParam=$token,$prefixParam=,$sourceParam=," +
+      s"$reportingIntervalParam=,$metricsCacheExpirationParam="
+    val hostname = java.net.InetAddress.getLocalHost.getHostAddress
+
+    val expectedConfig = LibratoConfig(email, token, defaultPrefix, hostname,
+      Duration.ofSeconds(30), Duration.ofMinutes(10))
+    LibratoConfig.parseArguments(args) shouldBe expectedConfig
+  }
+
   it should "throw IllegalArgumentException if email param is missing" in {
     val token = "12345678ABC"
 

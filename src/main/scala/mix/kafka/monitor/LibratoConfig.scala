@@ -36,10 +36,14 @@ object LibratoConfig {
     LibratoConfig(
       argsMap.getOrElse(emailParam, throw new IllegalArgumentException(s"$emailParam is required")),
       argsMap.getOrElse(tokenParam, throw new IllegalArgumentException(s"$tokenParam is required")),
-      argsMap.getOrElse(prefixParam, defaultPrefix),
-      argsMap.getOrElse(sourceParam, java.net.InetAddress.getLocalHost.getHostAddress),
-      Duration.parse(argsMap.getOrElse(reportingIntervalParam, "PT30S")),
-      Duration.parse(argsMap.getOrElse(metricsCacheExpirationParam, "PT10M"))
+      nonEmptyOptionalString(argsMap.get(prefixParam), defaultPrefix),
+      nonEmptyOptionalString(argsMap.get(sourceParam), java.net.InetAddress.getLocalHost.getHostAddress),
+      Duration.parse(nonEmptyOptionalString(argsMap.get(reportingIntervalParam), "PT30S")),
+      Duration.parse(nonEmptyOptionalString(argsMap.get(metricsCacheExpirationParam), "PT10M"))
     )
+  }
+
+  private def nonEmptyOptionalString(optionalString: Option[String], defaultValue: String): String = {
+    optionalString.map(_.trim).filter(_.nonEmpty).getOrElse(defaultValue)
   }
 }
