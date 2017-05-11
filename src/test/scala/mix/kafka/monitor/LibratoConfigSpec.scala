@@ -28,7 +28,7 @@ class LibratoConfigSpec extends FlatSpec with Matchers {
     val token = "12345678ABC"
 
     val args = s"$emailParam=$email,$tokenParam=$token"
-    val hostname = java.net.InetAddress.getLocalHost.getHostAddress
+    val hostname = java.net.InetAddress.getLocalHost.getHostName
 
     val expectedConfig = LibratoConfig(email, token, defaultPrefix, hostname,
       Duration.ofSeconds(30), Duration.ofMinutes(10))
@@ -41,7 +41,7 @@ class LibratoConfigSpec extends FlatSpec with Matchers {
 
     val args = s"$emailParam=$email,$tokenParam=$token,$prefixParam=,$sourceParam=," +
       s"$reportingIntervalParam=,$metricsCacheExpirationParam="
-    val hostname = java.net.InetAddress.getLocalHost.getHostAddress
+    val hostname = java.net.InetAddress.getLocalHost.getHostName
 
     val expectedConfig = LibratoConfig(email, token, defaultPrefix, hostname,
       Duration.ofSeconds(30), Duration.ofMinutes(10))
