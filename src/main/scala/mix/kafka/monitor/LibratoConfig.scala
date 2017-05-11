@@ -37,7 +37,7 @@ object LibratoConfig {
       argsMap.getOrElse(emailParam, throw new IllegalArgumentException(s"$emailParam is required")),
       argsMap.getOrElse(tokenParam, throw new IllegalArgumentException(s"$tokenParam is required")),
       nonEmptyOptionalString(argsMap.get(prefixParam), defaultPrefix),
-      nonEmptyOptionalString(argsMap.get(sourceParam), java.net.InetAddress.getLocalHost.getHostAddress),
+      nonEmptyOptionalString(argsMap.get(sourceParam), java.net.InetAddress.getLocalHost.getHostName),
       Duration.parse(nonEmptyOptionalString(argsMap.get(reportingIntervalParam), "PT30S")),
       Duration.parse(nonEmptyOptionalString(argsMap.get(metricsCacheExpirationParam), "PT10M"))
     )
