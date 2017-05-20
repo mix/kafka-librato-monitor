@@ -1,6 +1,5 @@
 package mix.kafka.monitor
 
-import java.lang.{Integer => JInt, Long => JLong}
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 
@@ -10,9 +9,9 @@ import kafka.utils.Logging
 
 class LibratoOffsetReporter(metricRegistry: MetricRegistry,
                             reporter: ScheduledReporter,
-                            cacheProvider: MetricsCacheProvider,
                             source: String,
-                            reportingInterval: Duration) extends Logging {
+                            reportingInterval: Duration,
+                            cacheExpiration: Duration) extends Logging {
 
   import LibratoOffsetReporter._
 
@@ -21,71 +20,84 @@ class LibratoOffsetReporter(metricRegistry: MetricRegistry,
   reporter.start(reportingInterval.getSeconds, TimeUnit.SECONDS)
 
   def report(offsets: IndexedSeq[OffsetGetter.OffsetInfo]): Unit = {
-    val metricsWithUpdatedValues = offsetsToMetrics(offsets)
-    val existingMetrics = cacheProvider.existingCacheEntries(metricsWithUpdatedValues.keys.toSeq)
-    val newMetrics = metricsWithUpdatedValues -- existingMetrics.keys
-    val mergedMetrics = mergeMetrics(existingMetrics, metricsWithUpdatedValues)
+
+    val updatedMetrics: Metrics = offsetsToMetrics(offsets)
+    val existingMetrics: Metrics = cacheProvider.cachedEntries(updatedMetrics.keys.toSeq)
+
+    // merge metrics and update cache
+    val mergedMetrics: Metrics = mergeMetrics(existingMetrics, updatedMetrics)
     cacheProvider.updateCache(mergedMetrics)
-    newMetrics.keys foreach addMetricToRegistry
+
+    // add new metrics to dropwizard registry
+    val newMetricKeys: Set[ConsumerGroupTopic] = mergedMetrics.keySet -- existingMetrics.keys
+    newMetricKeys foreach addMetricToRegistry
   }
 
-  private def addMetricToRegistry(key: GroupTopic): Unit = {
+  private def addMetricToRegistry(key: MetricKey): Unit = {
+    import java.lang.{Integer => JInt, Long => JLong}
+
     metricRegistry.register(getMetricName(key, "lag"), new Gauge[JLong] {
       override def getValue: JLong = {
-        cacheProvider.partitionLagsFromCache(key).values.map(_.toLong).sum
+        cacheProvider.cachedValues(key).getOrElse(Map.empty).values.map(_.value).sum
       }
     })
 
     metricRegistry.register(getMetricName(key, "partitions"), new Gauge[JInt] {
       override def getValue: JInt = {
-        cacheProvider.partitionLagsFromCache(key).keySet.size
+        cacheProvider.cachedValues(key).getOrElse(Map.empty).keySet.size
       }
     })
+  }
+
+  private lazy val cacheProvider = new CacheProvider[MetricKey, MetricValue](cacheExpiration)(expirationListener)
+
+  private def expirationListener(consumerGroupTopic: ConsumerGroupTopic): Unit = {
+    metricRegistry.remove(getMetricName(consumerGroupTopic, "lag"))
+    metricRegistry.remove(getMetricName(consumerGroupTopic, "partitions"))
   }
 
 }
 
 object LibratoOffsetReporter {
 
-  def getMetricName(metricKey: GroupTopic, metricSuffix: String): String = {
+  type MetricKey = ConsumerGroupTopic
+
+  type MetricValue = Map[Partition, Lag]
+
+  type Metrics = Map[MetricKey, MetricValue]
+
+  def getMetricName(metricKey: ConsumerGroupTopic, metricSuffix: String): String = {
     val nameComponents = Seq(metricKey.group, metricKey.topic, metricSuffix) map resolveName
     nameComponents mkString "."
   }
 
-  def offsetsToMetrics(rawOffsets: Seq[OffsetGetter.OffsetInfo]): Map[GroupTopic, Map[JInt, JLong]] = {
-    val groupedOffsets = rawOffsets.groupBy(o => GroupTopic(o.group, o.topic))
+  def offsetsToMetrics(rawOffsets: Seq[OffsetGetter.OffsetInfo]): Metrics = {
+    val groupedOffsets = rawOffsets.groupBy(o => ConsumerGroupTopic(o.group, o.topic))
     groupedOffsets map { case (groupTopic, offsets) =>
       val partitionLagForGroupTopic = offsets map { offset =>
-        offset.partition.asInstanceOf[JInt] -> offset.lag.asInstanceOf[JLong]
+        Partition(offset.partition) -> Lag(offset.lag)
       } toMap
 
       groupTopic -> partitionLagForGroupTopic
     }
   }
 
-  def mergeMetrics(existingMetrics: Map[GroupTopic, Map[JInt, JLong]],
-                   newMetrics: Map[GroupTopic, Map[JInt, JLong]]): Map[GroupTopic, Map[JInt, JLong]] = {
+  def mergeMetrics(existingMetrics: Metrics, newMetrics: Metrics): Metrics = {
     newMetrics map { case (groupTopic, newPartitions) =>
       val existingPartitions = existingMetrics.getOrElse(groupTopic, Map.empty)
-      groupTopic -> mergePartitionsForMetric(groupTopic, existingPartitions, newPartitions)
+      groupTopic -> mergePartitionsForMetric(existingPartitions, newPartitions)
     }
   }
 
-  private def mergePartitionsForMetric(groupTopic: GroupTopic,
-                                       existingPartitions: Map[JInt, JLong],
-                                       updatedPartitions: Map[JInt, JLong]): Map[JInt, JLong] = {
+  private def mergePartitionsForMetric(existingPartitions: Map[Partition, Lag],
+                                       updatedPartitions: Map[Partition, Lag]): Map[Partition, Lag] = {
 
     val existingPartitionsWithUpdatedLag = existingPartitions map { case (partition, lag) =>
       partition -> updatedPartitions.getOrElse(partition, lag)
     }
 
-    val newPartitions = updatedPartitions.keySet -- existingPartitions.keySet
-    val newPartitionsWithLag = newPartitions map { partition =>
-      partition -> updatedPartitions.getOrElse(partition,
-        throw new IllegalStateException(s"unable to get lag for $partition in $groupTopic"))
-    }
-
-    existingPartitionsWithUpdatedLag ++ newPartitionsWithLag
+    val newPartitions = updatedPartitions -- existingPartitions.keySet
+    existingPartitionsWithUpdatedLag ++ newPartitions
   }
 
   private def resolveName(rawName: String): String = {

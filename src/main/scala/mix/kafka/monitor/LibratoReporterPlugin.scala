@@ -24,9 +24,8 @@ class LibratoReporterPlugin(pluginArgs: String) extends OffsetInfoReporter with 
     .setDurationUnit(TimeUnit.MILLISECONDS)
     .build()
 
-  private lazy val cacheProvider = new MetricsCacheProvider(metrics, libratoConfig.metricsCacheExpiration)
-  private lazy val offsetReporter = new LibratoOffsetReporter(metrics, libratoReporter, cacheProvider,
-    libratoConfig.source, libratoConfig.reportingInterval)
+  private lazy val offsetReporter = new LibratoOffsetReporter(metrics, libratoReporter,
+    libratoConfig.source, libratoConfig.reportingInterval, libratoConfig.metricsCacheExpiration)
 
   override def report(offsets: IndexedSeq[OffsetGetter.OffsetInfo]): Unit = offsetReporter.report(offsets)
 }
