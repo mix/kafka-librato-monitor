@@ -2,8 +2,6 @@ package mix.kafka.monitor
 
 import java.time.Duration
 
-case class Lag(value: Long)
-
 case class LibratoConfig(email: String,
                          token: String,
                          prefix: String,

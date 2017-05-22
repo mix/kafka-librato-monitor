@@ -5,82 +5,103 @@ import java.util.concurrent.TimeUnit
 
 import com.codahale.metrics.{Gauge, MetricRegistry, ScheduledReporter}
 import com.quantifind.kafka.OffsetGetter
-import com.quantifind.kafka.OffsetGetter.OffsetInfo
 import kafka.utils.Logging
 
-class LibratoOffsetReporter(metrics: MetricRegistry,
+class LibratoOffsetReporter(metricRegistry: MetricRegistry,
                             reporter: ScheduledReporter,
+                            source: String,
                             reportingInterval: Duration,
-                            metricsCacheExpiration: Duration) extends Logging {
+                            cacheExpiration: Duration) extends Logging {
 
   import LibratoOffsetReporter._
 
-  logger.info(s"starting LibratoOffsetReporter with interval = $reportingInterval, cacheTTL = $metricsCacheExpiration")
+  logger.info(s"starting LibratoOffsetReporter with source = $source, interval = $reportingInterval")
 
   reporter.start(reportingInterval.getSeconds, TimeUnit.SECONDS)
 
   def report(offsets: IndexedSeq[OffsetGetter.OffsetInfo]): Unit = {
-    val cacheEntries = offsets map { offset =>
-      getMetricName(offset) -> Lag(offset.lag)
-    } toMap
 
-    import scala.collection.JavaConverters._
+    val updatedMetrics: Metrics = offsetsToMetrics(offsets)
+    val existingMetrics: Metrics = cacheProvider.cachedEntries(updatedMetrics.keys.toSeq)
 
-    /*
-     * First fetching all keys from cache before updating them since that would trigger registration of new metrics
-     * (via cacheLoader) to dropwizard-metrics registry without errors since dropwizard throw errors while trying to
-     * register existing gauges - so basically relying on cache synchronised behavior to register metrics only once.
-     */
-    cache.getAll(cacheEntries.keys.asJava)
-    cache.putAll(cacheEntries.asJava)
+    // merge metrics and update cache
+    val mergedMetrics: Metrics = mergeMetrics(existingMetrics, updatedMetrics)
+    cacheProvider.updateCache(mergedMetrics)
+
+    // add new metrics to dropwizard registry
+    val newMetricKeys: Set[ConsumerGroupTopic] = mergedMetrics.keySet -- existingMetrics.keys
+    newMetricKeys foreach addMetricToRegistry
   }
 
-  import com.github.benmanes.caffeine.cache._
+  private def addMetricToRegistry(key: MetricKey): Unit = {
+    import java.lang.{Integer => JInt, Long => JLong}
 
-  private[this] lazy val cache = Caffeine
-    .newBuilder()
-    .expireAfterAccess(metricsCacheExpiration.getSeconds, TimeUnit.SECONDS)
-    .removalListener(removalListener)
-    .build[String, Lag](cacheLoader)
-
-  private lazy val removalListener = new RemovalListener[String, Lag] {
-    override def onRemoval(notification: RemovalNotification[String, Lag]): Unit = {
-      notification.getCause match {
-        case RemovalCause.REPLACED =>
-          logger.debug(s"updating value for ${notification.getKey}")
-        case RemovalCause.EXPIRED =>
-          val metricName = notification.getKey
-          logger.info(s"removing $metricName from registry after expiration")
-          metrics.remove(metricName)
-        case _ =>
-          throw new IllegalStateException(s"unsupported ${notification.getCause} for metrics cache")
+    metricRegistry.register(getMetricName(key, "lag"), new Gauge[JLong] {
+      override def getValue: JLong = {
+        cacheProvider.cachedValues(key).getOrElse(Map.empty).values.map(_.value).sum
       }
-    }
-  }
+    })
 
-  private lazy val cacheLoader = new CacheLoader[String, Lag] {
-    override def load(key: String): Lag = {
-      val default = Lag(0L)
-      val lag = new Gauge[Long] {
-        override def getValue: Long = default.value
+    metricRegistry.register(getMetricName(key, "partitions"), new Gauge[JInt] {
+      override def getValue: JInt = {
+        cacheProvider.cachedValues(key).getOrElse(Map.empty).keySet.size
       }
-
-      logger.info(s"adding $key to registry")
-      metrics.register(key, lag)
-      default
-    }
+    })
   }
+
+  private lazy val cacheProvider = new CacheProvider[MetricKey, MetricValue](cacheExpiration)(expirationListener)
+
+  private def expirationListener(consumerGroupTopic: ConsumerGroupTopic): Unit = {
+    metricRegistry.remove(getMetricName(consumerGroupTopic, "lag"))
+    metricRegistry.remove(getMetricName(consumerGroupTopic, "partitions"))
+  }
+
 }
 
 object LibratoOffsetReporter {
-  def getMetricName(offsetInfo: OffsetInfo): String = {
-    val nameComponents = Seq(
-      offsetInfo.group,
-      offsetInfo.topic,
-      offsetInfo.partition.toString,
-      "lag"
-    )
 
-    nameComponents.map(_.replaceAll("\\.", "-")).map(_.toLowerCase).mkString(".")
+  type MetricKey = ConsumerGroupTopic
+
+  type MetricValue = Map[Partition, Lag]
+
+  type Metrics = Map[MetricKey, MetricValue]
+
+  def getMetricName(metricKey: ConsumerGroupTopic, metricSuffix: String): String = {
+    val nameComponents = Seq(metricKey.group, metricKey.topic, metricSuffix) map resolveName
+    nameComponents mkString "."
   }
+
+  def offsetsToMetrics(rawOffsets: Seq[OffsetGetter.OffsetInfo]): Metrics = {
+    val groupedOffsets = rawOffsets.groupBy(o => ConsumerGroupTopic(o.group, o.topic))
+    groupedOffsets map { case (groupTopic, offsets) =>
+      val partitionLagForGroupTopic = offsets map { offset =>
+        Partition(offset.partition) -> Lag(offset.lag)
+      } toMap
+
+      groupTopic -> partitionLagForGroupTopic
+    }
+  }
+
+  def mergeMetrics(existingMetrics: Metrics, newMetrics: Metrics): Metrics = {
+    newMetrics map { case (groupTopic, newPartitions) =>
+      val existingPartitions = existingMetrics.getOrElse(groupTopic, Map.empty)
+      groupTopic -> mergePartitionsForMetric(existingPartitions, newPartitions)
+    }
+  }
+
+  private def mergePartitionsForMetric(existingPartitions: Map[Partition, Lag],
+                                       updatedPartitions: Map[Partition, Lag]): Map[Partition, Lag] = {
+
+    val existingPartitionsWithUpdatedLag = existingPartitions map { case (partition, lag) =>
+      partition -> updatedPartitions.getOrElse(partition, lag)
+    }
+
+    val newPartitions = updatedPartitions -- existingPartitions.keySet
+    existingPartitionsWithUpdatedLag ++ newPartitions
+  }
+
+  private def resolveName(rawName: String): String = {
+    rawName.replaceAll("\\.", "-").trim.toLowerCase
+  }
+
 }
