@@ -35,6 +35,7 @@ class LibratoOffsetReporter(metricRegistry: MetricRegistry,
 
   private def addMetricToRegistry(key: MetricKey): Unit = {
     import java.lang.{Integer => JInt, Long => JLong}
+    logger.info(s"adding metrics for $key to registry")
 
     metricRegistry.register(getMetricName(key, "lag"), new Gauge[JLong] {
       override def getValue: JLong = {
@@ -52,6 +53,8 @@ class LibratoOffsetReporter(metricRegistry: MetricRegistry,
   private lazy val cacheProvider = new CacheProvider[MetricKey, MetricValue](cacheExpiration)(expirationListener)
 
   private def expirationListener(consumerGroupTopic: ConsumerGroupTopic): Unit = {
+    logger.info(s"removing metrics for $consumerGroupTopic from registry")
+
     metricRegistry.remove(getMetricName(consumerGroupTopic, "lag"))
     metricRegistry.remove(getMetricName(consumerGroupTopic, "partitions"))
   }
