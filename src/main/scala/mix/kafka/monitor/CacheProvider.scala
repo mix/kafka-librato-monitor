@@ -40,7 +40,7 @@ class CacheProvider[K <: AnyRef, V <: AnyRef](cacheExpiration: Duration)(expirat
           logger.debug(s"updating value for $key")
 
         case RemovalCause.EXPIRED =>
-          logger.info(s"removing $key from registry after expiration")
+          logger.debug(s"removing $key from cache after expiration")
           expirationListener.apply(key)
 
         case _ =>
