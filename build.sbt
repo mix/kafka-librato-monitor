@@ -9,7 +9,10 @@ libraryDependencies ++= Seq(
   "com.github.ben-manes.caffeine" % "caffeine" % "1.0.0",
   "com.quantifind" %% "kafkaoffsetmonitor" % "0.4.6-SNAPSHOT",
   "com.librato.metrics" % "metrics-librato" % "5.0.5",
-  "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+  "org.scalatest" %% "scalatest" % "3.0.1" % "test",
+
+  // explicitly adding trasnsistive dependency to fix issue with ${packaging.type} - https://github.com/sbt/sbt/issues/3618
+  "org.reflections" % "reflections" % "0.9.11" artifacts( Artifact("reflections", "jar", "jar"))
 )
 
 // To remove multiple exclusions
@@ -38,9 +41,4 @@ scalacOptions := Seq("-deprecation",
 ivyLoggingLevel := UpdateLogging.Quiet
 
 logLevel := Level.Info
-
-val reflectionsLib = {
-  sys.props += "packaging.type" -> "jar"
-  ()
-}
 
