@@ -38,3 +38,9 @@ scalacOptions := Seq("-deprecation",
 ivyLoggingLevel := UpdateLogging.Quiet
 
 logLevel := Level.Info
+
+val reflectionsLib = {
+  sys.props += "packaging.type" -> "jar"
+  ()
+}
+
