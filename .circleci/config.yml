@@ -16,7 +16,7 @@ jobs:
           command: .circleci/setup-sbt.sh
       - run:
           name: Compile Source and Test Classes
-          command: sbt test:compile
+          command: sbt -Dpackaging.type=jar test:compile
       - save_cache:
           key: dependency-cache-{{ checksum "build.sbt" }}
           paths:
@@ -37,7 +37,7 @@ jobs:
           name: Build FatJar
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              sbt assembly
+              sbt -Dpackaging.type=jar assembly
               "cp target/scala-2.10/kafka-librato-monitor-assembly-*.jar $CIRCLE_ARTIFACTS/"
             fi
 
