@@ -36,8 +36,8 @@ jobs:
       - deploy:
           name: Build FatJar
           command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              sbt assembly
-              "cp target/scala-2.11/kafka-librato-monitor-assembly-*.jar $CIRCLE_ARTIFACTS/"
-            fi
+            sbt assembly
+            cp target/scala-2.11/kafka-librato-monitor-assembly-*.jar /tmp/artifacts/
+      - store_artifacts:
+          path: /tmp/artifacts
 
