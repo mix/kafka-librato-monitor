@@ -1,0 +1,43 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/mix/kafka-librato-monitor
+    docker:
+      - image: codestar/circleci-scala-sbt-git:scala-2.11.11-sbt-1.0.2
+    environment:
+      _JAVA_OPTIONS: "-Xms3g -Xmx3g"
+      SBT_CREDENTIALS: ~/.sbt/.credentials
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "build.sbt" }}
+      - run:
+          name: Setup SBT
+          command: .circleci/setup-sbt.sh
+      - run:
+          name: Compile Source and Test Classes
+          command: sbt test:compile
+      - save_cache:
+          key: dependency-cache-{{ checksum "build.sbt" }}
+          paths:
+            - ~/.ivy2
+      - run:
+          name: Run Tests
+          command: sbt coverage test
+      - run:
+          name: Collect and Report Test Coverage
+          command: .circleci/collect-test-reports.sh
+      - store_test_results:
+          path: ~/junit/
+      - store_artifacts:
+          path: ~/junit/
+      - store_artifacts:
+          path: /tmp/artifacts
+      - deploy:
+          name: Build FatJar
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              sbt assembly
+              "cp target/scala-2.10/kafka-librato-monitor-assembly-*.jar $CIRCLE_ARTIFACTS/"
+            fi
+
