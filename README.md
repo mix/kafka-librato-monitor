@@ -1,5 +1,5 @@
 # kafka-librato-monitor
-Plugin to [KafkaOffsetMonitor](https://github.com/quantifind/KafkaOffsetMonitor) tool reporting offset data to [Librato](https://www.librato.com/) via [dropwizard metrics](https://github.com/dropwizard/metrics) Librato [reporter](https://github.com/librato/metrics-librato) 
+Plugin to [kafka-offset-monitor](https://github.com/Morningstar/kafka-offset-monitor) tool reporting offset data to [Librato](https://www.librato.com/) via [dropwizard metrics](https://github.com/dropwizard/metrics) Librato [reporter](https://github.com/librato/metrics-librato)
 
 ## Getting Started
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
@@ -8,7 +8,7 @@ These instructions will get you a copy of the project up and running on your loc
 Install sbt, scala if not already installed
 
 ### Installing
-Currently KafkaOffsetMonitor is not available via public artifact repository, so before we build the plugin we need to build KafkaOffsetMonitor and publish it to maven local repo (for external only; for mix we have published the artifact in Mix Internal Repo):
+Currently kafka-offset-monitor is not available via public artifact repository, so before we build the plugin we need to build KafkaOffsetMonitor and publish it to maven local repo (for external only; for mix we have published the artifact in Mix Internal Repo):
 
 ```
 sbt publishM2
@@ -21,14 +21,15 @@ sbt clean assembly
 ```
 
 ### Running It
-Check how to run KafkaOffsetMonitor and modify the command by adding a plugin assembly jar file to the classpath, and put Librato configuration properties into a pluginsArgs argument.
+Check how to run kafka-offset-monitor and modify the command by adding a plugin assembly jar file to the classpath, and put Librato configuration properties into a pluginsArgs argument.
 
-See original KafkaOffsetMonitor example command modified with Librato reporter plugin usage:
+See original kafka-offset-monitor example command modified with Librato reporter plugin usage:
 
 ```
-java -cp "KafkaOffsetMonitor-assembly-0.3.0-SNAPSHOT.jar:kafka-librato-monitor-assembly-0.1.0.jar" \
+java -cp "kafka-offset-monitor-assembly-0.4.6-SNAPSHOT.jar:kafka-librato-monitor-assembly-0.2.0.jar" \
      com.quantifind.kafka.offsetapp.OffsetGetterWeb \
-     --zk zk-server1,zk-server2 \
+     --kafkaBrokers broker1:9092,broker2:9092
+     --zk zk-server1,zk-server2,zk-server-3 \
      --port 8080 \
      --refresh 10.seconds \
      --retain 2.days \
@@ -46,7 +47,7 @@ The pluginArgs used by kafka-librato-monitor are:
 
 ## Built With
 
-* [KafkaOffsetMonitor](https://github.com/quantifind/KafkaOffsetMonitor)
+* [kafka-offset-monitor](https://github.com/Morningstar/kafka-offset-monitor)
 * [Dropwizard Metrics](http://metrics.dropwizard.io/) - Toolkit of ways to measure the behavior of an application
 * [metrics-librato](https://github.com/librato/metrics-librato) - Librato reporter for Dropwizard Metrics
 
@@ -63,6 +64,6 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
 ## Acknowledgments
-* Special thanks to authors & maintainers of [KafkaOffsetMonitor](https://github.com/quantifind/KafkaOffsetMonitor) for creating this awesome tool with support for plugins.
+* Special thanks to authors & maintainers of [KafkaOffsetMonitor](https://github.com/quantifind/KafkaOffsetMonitor) & its [fork](https://github.com/Morningstar/kafka-offset-monitor) by Morningstar for creating this awesome tool with support for plugins.
 * This project is replica of [kafka-offset-monitor-graphite](https://github.com/allegro/kafka-offset-monitor-graphite) for Librato. Thank you for providing this graphite plugin. Future work - maybe we could convert this project into generic dropwizard monitor.
 * This Readme is inspired from [Readme Template](https://gist.github.com/PurpleBooth/109311bb0361f32d87a2)

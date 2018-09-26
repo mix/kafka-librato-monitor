@@ -15,6 +15,10 @@ libraryDependencies ++= Seq(
   "org.reflections" % "reflections" % "0.9.11" artifacts( Artifact("reflections", "jar", "jar"))
 )
 
+dependencyOverrides ++= Seq(
+  "org.apache.kafka" %% "kafka" % "0.10.0.1"
+)
+
 // To remove multiple exclusions
 excludeDependencies ++= Seq(
   ExclusionRule("com.google.code.findbugs", "annotations")
