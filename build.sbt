@@ -2,21 +2,14 @@ name := "kafka-librato-monitor"
 
 organization := "mix.kafka"
 
-scalaVersion := "2.11.11"
+scalaVersion := "2.10.3"
 
 // Dependencies
 libraryDependencies ++= Seq(
   "com.github.ben-manes.caffeine" % "caffeine" % "1.0.0",
-  "com.quantifind" %% "kafkaoffsetmonitor" % "0.4.6-SNAPSHOT",
+  "com.quantifind" %% "kafkaoffsetmonitor" % "0.3.0-SNAPSHOT",
   "com.librato.metrics" % "metrics-librato" % "5.0.5",
-  "org.scalatest" %% "scalatest" % "3.0.1" % "test",
-
-  // explicitly adding trasnsistive dependency to fix issue with ${packaging.type} - https://github.com/sbt/sbt/issues/3618
-  "org.reflections" % "reflections" % "0.9.11" artifacts( Artifact("reflections", "jar", "jar"))
-)
-
-dependencyOverrides ++= Seq(
-  "org.apache.kafka" %% "kafka" % "0.10.0.1"
+  "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 )
 
 // To remove multiple exclusions
