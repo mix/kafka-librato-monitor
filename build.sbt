@@ -34,6 +34,9 @@ scalacOptions := Seq("-deprecation",
   "-language:implicitConversions"
 )
 
+//assembly Settings
+test in assembly := {}
+
 // set Ivy logging to be at the highest level, if needed for debugging
 ivyLoggingLevel := UpdateLogging.Quiet
 
