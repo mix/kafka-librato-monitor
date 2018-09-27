@@ -37,7 +37,7 @@ jobs:
           name: Build FatJar
           command: |
             sbt assembly
-            cp target/scala-2.11/kafka-librato-monitor-assembly-*.jar /tmp/artifacts/
+            cp target/scala-2.10/kafka-librato-monitor-assembly-*.jar /tmp/artifacts/
       - store_artifacts:
           path: /tmp/artifacts
 
