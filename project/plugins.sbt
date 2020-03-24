@@ -1,3 +1,5 @@
+val workaround = { sys.props += "packaging.type" -> "jar" }
+
 logLevel := Level.Warn
 
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.5")
