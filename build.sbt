@@ -2,12 +2,12 @@ name := "kafka-librato-monitor"
 
 organization := "mix.kafka"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.11.11"
 
 // Dependencies
 libraryDependencies ++= Seq(
   "com.github.ben-manes.caffeine" % "caffeine" % "1.0.0",
-  "com.quantifind" %% "kafkaoffsetmonitor" % "0.3.0-SNAPSHOT",
+  "com.quantifind" %% "kafkaoffsetmonitor" % "0.4.6-SNAPSHOT",
   "com.librato.metrics" % "metrics-librato" % "5.0.5",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 )
@@ -42,3 +42,7 @@ ivyLoggingLevel := UpdateLogging.Quiet
 
 logLevel := Level.Info
 
+val workaround = {
+  sys.props += "packaging.type" -> "jar"
+  ()
+}
