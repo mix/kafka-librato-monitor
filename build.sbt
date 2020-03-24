@@ -41,8 +41,3 @@ test in assembly := {}
 ivyLoggingLevel := UpdateLogging.Quiet
 
 logLevel := Level.Info
-
-val workaround = {
-  sys.props += "packaging.type" -> "jar"
-  ()
-}
