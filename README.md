@@ -34,6 +34,8 @@ java -cp "kafka-offset-monitor-assembly-0.3.0-SNAPSHOT.jar:kafka-librato-monitor
      --refresh 10.seconds \
      --retain 2.days \
      --pluginsArgs libratoEmail=user@company.com,libratoToken=123456789ABCDEFGHIJKL,libratoPrefix=kafka-monitor
+     --kafkaSecurityProtocol SASL_PLAINTEXT 
+
 ```
 
 The pluginArgs used by kafka-librato-monitor are:
