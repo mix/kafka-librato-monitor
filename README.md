@@ -66,7 +66,7 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
 ## Acknowledgments
-* Special thanks to authors & maintainers of [KafkaOffsetMonitor](https://github.com/quantifind/KafkaOffsetMonitor) for creating this awesome tool with support for plugins.
+* Special thanks to authors & maintainers of [KafkaOffsetMonitor](https://github.com/quantifind/KafkaOffsetMonitor) for creating this awesome tool with support for plugins and Morningstar for updating that with SASL auth.
 * This project is replica of [kafka-offset-monitor-graphite](https://github.com/allegro/kafka-offset-monitor-graphite) for Librato. Thank you for providing this graphite plugin. Future work - maybe we could convert this project into generic dropwizard monitor.
 * This Readme is inspired from [Readme Template](https://gist.github.com/PurpleBooth/109311bb0361f32d87a2)
 
