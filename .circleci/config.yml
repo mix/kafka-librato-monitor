@@ -10,7 +10,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "build.sbt" }}-v1
+          key: dependency-cache-{{ checksum "build.sbt" }}
       - run:
           name: Setup SBT
           command: .circleci/setup-sbt.sh
@@ -18,7 +18,7 @@ jobs:
           name: Compile Source and Test Classes
           command: sbt test:compile
       - save_cache:
-          key: dependency-cache-{{ checksum "build.sbt" }}-v1
+          key: dependency-cache-{{ checksum "build.sbt" }}
           paths:
             - ~/.ivy2
       - run:
