@@ -26,7 +26,7 @@ Check how to run kafka-offset-monitor and modify the command by adding a plugin 
 See original kafka-offset-monitor example command modified with Librato reporter plugin usage:
 
 ```
-java -cp "kafka-offset-monitor-assembly-0.3.0-SNAPSHOT.jar:kafka-librato-monitor-assembly-0.3.0.jar" \
+java -cp "kafka-offset-monitor-assembly-0.4.6-SNAPSHOT.jar:kafka-librato-monitor-assembly-0.4.6.jar" \
      com.quantifind.kafka.offsetapp.OffsetGetterWeb \
      --kafkaBrokers broker1:9092,broker2:9092
      --zk zk-server1,zk-server2,zk-server-3 \
