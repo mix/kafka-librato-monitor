@@ -7,11 +7,10 @@ scalaVersion := "2.11.11"
 // Dependencies
 libraryDependencies ++= Seq(
   "com.github.ben-manes.caffeine" % "caffeine" % "1.0.0",
+  "org.reflections" % "reflections" % "0.9.11",
   "com.quantifind" %% "kafkaoffsetmonitor" % "0.4.6-SNAPSHOT" exclude("org.reflections", "reflections"),
   "com.librato.metrics" % "metrics-librato" % "5.0.5",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test",
-  "org.reflections" % "reflections" % "0.9.11"
-
 )
 
 // To remove multiple exclusions
