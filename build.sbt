@@ -10,11 +10,13 @@ libraryDependencies ++= Seq(
   "com.quantifind" %% "kafkaoffsetmonitor" % "0.4.6-SNAPSHOT",
   "com.librato.metrics" % "metrics-librato" % "5.0.5",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test",
+  "org.reflections" % "reflections" % "0.9.11"
 )
 
 // To remove multiple exclusions
 excludeDependencies ++= Seq(
-  ExclusionRule("com.google.code.findbugs", "annotations")
+  ExclusionRule("com.google.code.findbugs", "annotations"),
+  ExclusionRule("org.reflections", "reflections")
 )
 
 // use mix log4j.properties
